@@ -1,25 +1,14 @@
 var static = require('node-static');
 var http = require('http');
 var file = new(static.Server)();
-
-
+var port = process.env.PORT || 2013;
 var app = http.createServer(function (req, res) {
   file.serve(req, res);
-});
+}).listen(port);
 
-//app.set('port', (process.env.PORT || 2013));
-var port = process.env.PORT || 2013;
+
 
 console.log('listen on port'+port);
-app.listen(port);
-
-// Add pour Heroku
-// app.set('port', (process.env.PORT || 2013));
-
-
-
-
-
 
 // var express = require('express');
 // var app = express();
