@@ -15,6 +15,16 @@ var pc;
 var remoteStream;
 var turnReady;
 
+
+//var io = require('socket.io');
+// Titi - Contrôle de la version de socket.io
+// >>>> Vérification de concordance entre local et Hosted
+// console.log("**Socket.IO Version: " + require('socket.io/package').version);
+//console.log("test");
+//var toto = require('socket.io');
+
+
+
 // Configuration des serveurs stun...
 var pc_config = webrtcDetectedBrowser === 'firefox' ?
   {'iceServers':[{'url':'stun:23.21.150.121'}]} : // number IP

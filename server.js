@@ -1,6 +1,8 @@
 var static = require('node-static');
 var http = require('http');
 var file = new(static.Server)();
+// Titi :  Factorisation du numéro de port
+// Teste si présence d'une variable d'environnement Hosting (Heroku) sinon port 2013 pour local 
 var port = process.env.PORT || 2013;
 var app = http.createServer(function (req, res) {
   file.serve(req, res);
@@ -36,6 +38,8 @@ console.log('listen on port'+port);
 // 											  le client courant.
 
 var io = require('socket.io').listen(app);
+// Titi - Contrôle de la version de socket.io
+console.log("**Socket.IO Version: " + require('socket.io/package').version);
 io.sockets.on('connection', function (socket){
 
 	// Permet d'envoyer des traces au client distant
