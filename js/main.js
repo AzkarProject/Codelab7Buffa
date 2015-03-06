@@ -23,12 +23,29 @@ var turnReady;
 //console.log("test");
 //var toto = require('socket.io');
 
-
-
+// titi: Pkoi ce test pr firefox ????
+// titi: Et c'est quoi cette syntaxe à la mord mois le noeud ????
 // Configuration des serveurs stun...
+/*
 var pc_config = webrtcDetectedBrowser === 'firefox' ?
   {'iceServers':[{'url':'stun:23.21.150.121'}]} : // number IP
   {'iceServers': [{'url': 'stun:stun.l.google.com:19302'}]};
+/**/
+
+
+// Hack titi :
+var pc_config = {'iceServers':[{'url':'stun:23.21.150.121'}]};
+pc_config.iceServers.push({url: 'stun:stun.l.google.com:19302'});
+//tool.traceObjectDump(peerConnectionServer,'script. getPeerConnectionServers()');
+pc_config.iceServers.push({url: 'stun:stun1.l.google.com:19302'});
+pc_config.iceServers.push({url: 'stun:stun2.1.google.com:19302'}); 
+pc_config.iceServers.push({url: 'stun:stun3.1.google.com:19302'});
+pc_config.iceServers.push({url: 'stun:stun4.1.google.com:19302'});
+// Ajout d'un serveur' TURN
+pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis%40mozilla.com"});
+pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"});
+// -- end Hack
+
 
 // Peer connection constraints
 var pc_constraints = {
@@ -104,8 +121,8 @@ function sendMessage(message){
 	console.log('Sending message: ', message);
   socket.emit('message', message);
 }
-
-// Récépeiton de message générique.
+ 
+// Récéption de message générique.
 socket.on('message', function (message){
   console.log('Received message:', message);
 
@@ -172,10 +189,21 @@ var constraints = {video: true};
 getUserMedia(constraints, handleUserMedia, handleUserMediaError);
 console.log('Getting user media with constraints', constraints);
 
+
 // On regarde si on a besoin d'un serveur TURN que si on est pas en localhost
-if (location.hostname != "localhost") {
-  requestTurn('https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913');
-}
+// Add Titi: Et aussi si c'est pas 127.0.0.1 !!!!!
+if ( (location.hostname != "localhost") && (location.hostname != '127.0.0.1') ) {
+  console.log("On est en local !!!");
+  // requestTurn('https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913');
+};
+
+
+// titi >>> Pour tests et forcer le chargement du turn
+// console.log('@>>>> requestTurn forcé');
+// requestTurn('https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913');
+
+
+/**/
 
 // On démarre peut être l'appel (si on est appelant) que quand on a toutes les 
 // conditons. Si on est l'appelé on n'ouvre que la connexion p2p   
@@ -396,12 +424,21 @@ function setLocalAndSendMessage(sessionDescription) {
   sendMessage(sessionDescription);
 }
 
+
+// titi: inutile si les stun/turn sont préalablement renseignés ???
+/*
 // regarde si le serveur turn de la configuration de connexion
 // (pc_config) existe, sinon récupère l'IP/host d'un serveur
 // renvoyé par le web service computeengineondemand.appspot.com
 // de google. La requête se fait en Ajax, résultat renvoyé en JSON.
 function requestTurn(turn_url) {
+  
+  
+
   var turnExists = false;
+  
+  
+
   for (var i in pc_config.iceServers) {
     if (pc_config.iceServers[i].url.substr(0, 5) === 'turn:') {
       turnExists = true;
@@ -409,6 +446,7 @@ function requestTurn(turn_url) {
       break;
     }
   }
+  
   if (!turnExists) {
     console.log('Getting TURN server from ', turn_url);
     // No TURN server. Get one from computeengineondemand.appspot.com:
@@ -417,17 +455,24 @@ function requestTurn(turn_url) {
       if (xhr.readyState === 4 && xhr.status === 200) {
         var turnServer = JSON.parse(xhr.responseText);
       	console.log('Got TURN server: ', turnServer);
+        
         pc_config.iceServers.push({
           'url': 'turn:' + turnServer.username + '@' + turnServer.turn,
           'credential': turnServer.password
         });
+
         turnReady = true;
       }
     };
     xhr.open('GET', turn_url, true);
     xhr.send();
+
+
+
+
   }
 }
+/**/
 
 // Ecouteur de onremotestream : permet de voir la vidéo du pair distant dans 
 // l'élément HTML remoteVideo

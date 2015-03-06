@@ -4,6 +4,7 @@ var static = require('node-static');
 var http = require('http');
 var file = new(static.Server)();
 
+
 // T.Bergeron: Factorisation des variables d'environnement 
 var ipaddress = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1" ;
 var port = process.env.OPENSHIFT_NODEJS_PORT || 2013;
@@ -37,6 +38,7 @@ console.log('**Server is listening on port '+port);
 
 
 io.sockets.on('connection', function (socket){
+
 	function log(){
 		var array = [">>> "];
 	  for (var i = 0; i < arguments.length; i++) {
@@ -44,12 +46,16 @@ io.sockets.on('connection', function (socket){
 	  }
 	    socket.emit('log', array);
 	}
+	
 	socket.on('message', function (message) {
 		log('Got message: ', message);
 		socket.broadcast.emit('message', message); // should be room only
 	});
+
+	
 	socket.on('create or join', function (room) {
 		var numClients = io.sockets.clients(room).length;
+		// -- reprise original
 		log('Room ' + room + ' has ' + numClients + ' client(s)');
 		log('Request to create or join room', room);
 		if (numClients == 0){
@@ -63,6 +69,8 @@ io.sockets.on('connection', function (socket){
 			socket.emit('full', room);
 		}
 	});
+	
+
 });
 
 /**/
