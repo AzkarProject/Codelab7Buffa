@@ -90,10 +90,23 @@ io.sockets.on('connection', function (socket){
 var static = require('node-static');
 var http = require('http');
 var file = new(static.Server)();
+var ipaddress = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1" ;
 var port = process.env.OPENSHIFT_NODEJS_PORT || 2013;
+/*
 var app = http.createServer(function (req, res) {
   file.serve(req, res);
 }).listen(port);
+/**/
+// console.log('Port >>> '+port);
+var app = http.createServer(function (req, res) {
+  file.serve(req, res);
+}).listen( port, ipaddress, function() {
+    console.log((new Date()) + ' Server is on the IP adress '+ipaddress);
+    console.log((new Date()) + ' Server is listening on port '+port);
+});
+
+
+
 console.log('listen on port'+port);
 var io = require('socket.io').listen(app);
 io.sockets.on('connection', function (socket){
