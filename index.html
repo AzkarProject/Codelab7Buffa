@@ -6,6 +6,11 @@
 <meta name='description' content='WebRTC Reference App' />
 <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1'>
 
+
+<link rel="stylesheet" href="./css/main.css" />
+
+
+
 <base target='_blank'>
 
 <title>WebRTC client</title>
@@ -15,26 +20,51 @@
 </head>
 
 <body>
-<H3>Codelab STEP 7 Buffa 1.0.16</H3>
-<div id='container'>
+<H3>Codelab7 1.0.17</H3>
 
-  <div id='videos'>
-    <video id='localVideo' autoplay muted></video>
-    <video id='remoteVideo' autoplay></video>
-  </div>
+<ul class="flex-container wrap">
 
-  <div id='textareas'>
-		<textarea id="dataChannelSend" disabled placeholder="Press Start, enter some text, then press Send."></textarea>
-		<textarea id="dataChannelReceive" disabled></textarea>
-	</div>
+  
+    
+    <section id="myvideos" class="sectionOneVideo">
+	    <li class="flex-item myvideo">
+		    <h4>Vous (peer 1)</h4>
+		    <div id="infoIceCandidateSended">???</div>
+		    <video id='localVideo' autoplay muted controls="controls"></video>
+		</li>
+    </section>
+    
+     <section class="yourvideos" class="sectionMultipleVideos">
+	    <li class="flex-item yourvideo">
+		    <h4>Lui (peer 2)</h4>
+		    <div id="infoIceCandidateReceived">???</div>
+		    <video id='remoteVideo' autoplay muted controls="controls" ></video>
+  	 	</li>
+  	 </section>
 
-  <button id="sendButton" disabled>Send</button>
+ 
 
-</div>
+  
+	<section id="chat">
+		  
+		<li class="flex-item">
+			<div id='textareas'>
+				<textarea id="dataChannelSend" disabled placeholder="Press Start, enter some text, then press Send."></textarea>
+				<textarea id="dataChannelReceive" disabled></textarea>
+			</div>
+	
+  			<button id="sendButton" disabled>Send</button>
+  		</li>
+  	
+  	</section>
 
+</ul>
+
+<script src="js/utils.js"></script>
 <script src='/socket.io/socket.io.js'></script>
 <script src='js/lib/adapter.js'></script>
 <script src='js/main.js'></script>
+
 
 </body>
 </html>

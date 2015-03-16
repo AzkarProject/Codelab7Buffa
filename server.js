@@ -5,13 +5,13 @@ var http = require('http');
 var file = new(static.Server)();
 
 
-// T.Bergeron: Factorisation des variables d'environnement 
+// titi: Factorisation des variables d'environnement 
 var ipaddress = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1" ;
 var port = process.env.OPENSHIFT_NODEJS_PORT || 2013;
 
 var app = http.createServer(function (req, res) {
   file.serve(req, res);
-// }).listen(port); // T.Bergeron: 404/503 sur Openshift... Remplacé par >>>
+// }).listen(port); // titi: 404/503 sur Openshift... Remplacé par >>>
 }).listen( port, ipaddress, function() { 
     console.log((new Date()) + ' Server is on the IP adress '+ipaddress); // débugg
     console.log((new Date()) + ' Server is listening on port '+port); // Débugg
@@ -31,13 +31,23 @@ var app = http.createServer(function (req, res) {
 
 
 var io = require('socket.io').listen(app);
-// T.Bergeron: Contrôle de la version de socket.io et débugg openshift
+// titi: Contrôle de la version de socket.io et débugg openshift
 console.log("**Socket.IO Version: " + require('socket.io/package').version);
 console.log('**Server is on the IP adress '+ipaddress);
 console.log('**Server is listening on port '+port);
 
+/*// titi: Variables a passer coté client
+var messageIoVersion = "Server Socket.IO Version >>> " + require('socket.io/package').version;
+var messageIPServer = "Server is on the IP adress "+ipaddress;
+var messagePortServer = "Server  is listening on port "+port;
+/**/
+
 
 io.sockets.on('connection', function (socket){
+
+	// A finir pour passer des variables coté client...
+	//log('Got message: ', message);
+	//socket.broadcast.emit('message', message); // should be room only
 
 	function log(){
 		var array = [">>> "];

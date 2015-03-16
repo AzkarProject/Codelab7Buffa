@@ -5,6 +5,10 @@ var sendButton = document.getElementById("sendButton");
 var sendTextarea = document.getElementById("dataChannelSend");
 var receiveTextarea = document.getElementById("dataChannelReceive");
 
+// titi: pour afficher les données "Candidate finales de chaque client
+var infoIceCandidateReceive = document.getElementById("infoIceCandidateReceived");
+var infoIceCandidateSend = document.getElementById("infoIceCandidateSended");
+
 sendButton.onclick = sendData;
 
 var isChannelReady;
@@ -33,31 +37,65 @@ var pc_config = webrtcDetectedBrowser === 'firefox' ?
 /**/
 
 
-// Hack titi :
+/*// Hack titi :
 var pc_config = {'iceServers':[{'url':'stun:23.21.150.121'}]};
 pc_config.iceServers.push({url: 'stun:stun.l.google.com:19302'});
 //tool.traceObjectDump(peerConnectionServer,'script. getPeerConnectionServers()');
-pc_config.iceServers.push({url: 'stun:stun1.l.google.com:19302'});
-pc_config.iceServers.push({url: 'stun:stun2.1.google.com:19302'}); 
-pc_config.iceServers.push({url: 'stun:stun3.1.google.com:19302'});
-pc_config.iceServers.push({url: 'stun:stun4.1.google.com:19302'});
+//pc_config.iceServers.push({url: 'stun:stun1.l.google.com:19302'});
+//pc_config.iceServers.push({url: 'stun:stun2.1.google.com:19302'}); 
+//pc_config.iceServers.push({url: 'stun:stun3.1.google.com:19302'});
+//pc_config.iceServers.push({url: 'stun:stun4.1.google.com:19302'});
 // Ajout d'un serveur' TURN
-pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis%40mozilla.com"});
+// pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis%40mozilla.com"});
 pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"});
 // -- end Hack
+/**/
+
+// titi: instanciation de mes outils de débugg
+var tool = new utils();
+// tool.testutils('librairie utils active...');
+
+// titi: On fait au plus simple la déclaration des serveurs stun/turn
+var pc_config = {
+    iceServers: [
+        {url: "stun:23.21.150.121"},
+        {url: "stun:stun.l.google.com:19302"},
+        {url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"}
+    ]
+}
+
+// titi: Hack pour connaitre l'adresse Ip locale/réseau du client
+var lastCandidate;
+
 
 
 // Peer connection constraints
+// note titi: Selon le type de connexion, on peux passer des options.
 var pc_constraints = {
   'optional': [
-    {'DtlsSrtpKeyAgreement': true},
-    {'RtpDataChannels': true}
+    {'DtlsSrtpKeyAgreement': true}, // titi: DtlsSrtpKeyAgreement est exigé pour Chrome et Firefox pour interagir.
+    {'RtpDataChannels': true} // titi: RtpDataChannels est nécessaire si nous voulons utiliser l'API DataChannels sur Firefox.
   ]};
 
 // Set up audio and video regardless of what devices are present.
 var sdpConstraints = {'mandatory': {
   'OfferToReceiveAudio':true,
   'OfferToReceiveVideo':true }};
+
+// titi - constraints 
+var constraints = {
+          audio: true,
+          video: {
+              mandatory : {
+                  maxWidth    : 300,
+                  maxHeight   : 180  
+              }
+          }
+    };
+
+// var constraints = {video: true};
+
+
 
 /////////////////////////////////////////////
 
@@ -118,23 +156,25 @@ socket.on('log', function (array){
 // Il est important de regarder dans le code de ce fichier quand on envoit
 // des messages.
 function sendMessage(message){
-	console.log('Sending message: ', message);
+  // console.log('Sending message: ', message);
   socket.emit('message', message);
 }
  
 // Récéption de message générique.
 socket.on('message', function (message){
-  console.log('Received message:', message);
-
+ 
 
   if (message === 'got user media') {
     // On ouvre peut-être la connexion p2p
   	maybeStart();
+  
+ 
+ // on a recu une "offre"
   } else if (message.type === 'offer') {
 
+    // On initialise la connexion p2p si on est pas l'apellant
+    // et si elle n'est pas déjàs ouverte...
     if (!isInitiator && !isStarted) {
-      // on a recu une "offre" on ouvre peut être la connexion so on
-      // est pas appelant et si on ne l'a pas déjà ouverte...
       maybeStart();
     }
 
@@ -145,19 +185,36 @@ socket.on('message', function (message){
 
     // On envoie une réponse à l'offre.
     doAnswer();
+  
+  
+  // On a reçu une réponse à l'offre envoyée, on initialise la 
+  // "remote description" du pair.
   } else if (message.type === 'answer' && isStarted) {
-    // On a reçu une réponse à l'offre envoyée, on initialise la 
-    // "remote description" du pair.
+    
     pc.setRemoteDescription(new RTCSessionDescription(message));
+  
+  // On a recu un "ice candidate" et la connexion p2p est déjà ouverte
   } else if (message.type === 'candidate' && isStarted) {
-    // On a recu un "ice candidate" et la connexion p2p est déjà ouverte
+    
     // On ajoute cette candidature à la connexion p2p. 
-    var candidate = new RTCIceCandidate({sdpMLineIndex:message.label,
-      candidate:message.candidate});
+    var candidate = new RTCIceCandidate({
+      sdpMLineIndex:message.label,
+      candidate:message.candidate
+    });
+    
     pc.addIceCandidate(candidate);
+    
+    // titi: on copie le dernier candidat reçut ds une variable de contrôle
+    lastCandidate = candidate;
+ 
+  // 
   } else if (message === 'bye' && isStarted) {
     handleRemoteHangup();
   }
+ 
+ // titi: Modification du message pour meilleure lisibilité logs ...
+ console.log('Received message: >>>', message);
+
 });
 
 ////////////////////////////////////////////////////
@@ -184,7 +241,9 @@ function handleUserMediaError(error){
   console.log('getUserMedia error: ', error);
 }
 
-var constraints = {video: true};
+
+
+
 
 getUserMedia(constraints, handleUserMedia, handleUserMediaError);
 console.log('Getting user media with constraints', constraints);
@@ -193,8 +252,10 @@ console.log('Getting user media with constraints', constraints);
 // On regarde si on a besoin d'un serveur TURN que si on est pas en localhost
 // Add Titi: Et aussi si c'est pas 127.0.0.1 !!!!!
 if ( (location.hostname != "localhost") && (location.hostname != '127.0.0.1') ) {
-  console.log("On est en local !!!");
+  console.log("Distant hosting !!!");
   // requestTurn('https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913');
+} else {
+  console.log("Local hosting !!!");
 };
 
 
@@ -366,6 +427,10 @@ function handleIceCandidate(event) {
       id: event.candidate.sdpMid,
       candidate: event.candidate.candidate});
   } else {
+    
+    var debugCandidate = tool.stringObjectDump(lastCandidate,'candidate');
+    //infoIceCandidateReceive.value = lastCandidate;
+    infoIceCandidateReceive.innerHTML = debugCandidate;
     console.log('End of candidates.');
   }
 }
@@ -481,7 +546,13 @@ function handleRemoteStreamAdded(event) {
  // reattachMediaStream(miniVideo, localVideo);
   attachMediaStream(remoteVideo, event.stream);
   remoteStream = event.stream;
-//  waitForRemoteVideo();
+  //  waitForRemoteVideo();
+
+  // titi: on regarde si on trouves pas des données ICE Candidate ds le flux vidéo apellant
+  // var objectDebugg = tool.stringObjectDump(remoteStream,"remoteStream");
+  // alert (objectDebugg);
+  // Bon, au final ca donne rien...
+  
 }
 
 function handleRemoteStreamRemoved(event) {
