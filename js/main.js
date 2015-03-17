@@ -58,8 +58,8 @@ var tool = new utils();
 // titi: On fait au plus simple la déclaration des serveurs stun/turn
 var pc_config = {
     iceServers: [
-        {url: "stun:23.21.150.121"},
-        {url: "stun:stun.l.google.com:19302"}
+        // {url: "stun:23.21.150.121"},
+        // {url: "stun:stun.l.google.com:19302"}
         // {url: 'turn:turn.anyfirewall.com:443?transport=tcp', credential: 'webrtc', username: 'azkarproject'}
         // {url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"}
     ]
