@@ -8,6 +8,12 @@ var receiveTextarea = document.getElementById("dataChannelReceive");
 // titi: pour afficher les données "Candidate finales de chaque client
 var infoIceCandidateReceive = document.getElementById("infoIceCandidateReceived");
 var infoIceCandidateSend = document.getElementById("infoIceCandidateSended");
+// titi: flag de sélection de type de serveur...
+var validChoiceP2pStunTurn  = false;
+var forceServer = false;
+//var forceServer = "p2p";
+var forceServer = "stun";
+//var forceServer = "turn";
 
 sendButton.onclick = sendData;
 
@@ -37,17 +43,18 @@ var pc_config = webrtcDetectedBrowser === 'firefox' ?
 /**/
 
 
-/*// Hack titi :
+// Hack titi :
 var pc_config = {'iceServers':[{'url':'stun:23.21.150.121'}]};
 pc_config.iceServers.push({url: 'stun:stun.l.google.com:19302'});
-//tool.traceObjectDump(peerConnectionServer,'script. getPeerConnectionServers()');
-//pc_config.iceServers.push({url: 'stun:stun1.l.google.com:19302'});
-//pc_config.iceServers.push({url: 'stun:stun2.1.google.com:19302'}); 
-//pc_config.iceServers.push({url: 'stun:stun3.1.google.com:19302'});
-//pc_config.iceServers.push({url: 'stun:stun4.1.google.com:19302'});
-// Ajout d'un serveur' TURN
+// pc_config.iceServers.push({url: 'stun:stun1.l.google.com:19302'});
+// pc_config.iceServers.push({url: 'stun:stun2.1.google.com:19302'}); 
+// pc_config.iceServers.push({url: 'stun:stun3.1.google.com:19302'});
+// pc_config.iceServers.push({url: 'stun:stun4.1.google.com:19302'});
+// Ajout de serveurs TURN
 // pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis%40mozilla.com"});
-pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"});
+// pc_config.iceServers.push({url: 'turn:turn.anyfirewall.com:443?transport=tcp', credential: 'webrtc', username: 'azkarproject'});
+// pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"});
+
 // -- end Hack
 /**/
 
@@ -55,15 +62,17 @@ pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo
 var tool = new utils();
 // tool.testutils('librairie utils active...');
 
+/*
 // titi: On fait au plus simple la déclaration des serveurs stun/turn
 var pc_config = {
     iceServers: [
-        // {url: "stun:23.21.150.121"},
-        // {url: "stun:stun.l.google.com:19302"}
+        {url: "stun:23.21.150.121"},
+        {url: "stun:stun.l.google.com:19302"},
         // {url: 'turn:turn.anyfirewall.com:443?transport=tcp', credential: 'webrtc', username: 'azkarproject'}
-        // {url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"}
+        {url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"}
     ]
 }
+/**/
 
 // titi: Hack pour connaitre l'adresse Ip locale/réseau du client
 var lastCandidate;
@@ -184,6 +193,18 @@ socket.on('message', function (message){
     // (et recu ici)
     pc.setRemoteDescription(new RTCSessionDescription(message));
 
+    
+    // var debugOffer = tool.stringObjectDump(message,"Receive offer >>>");
+    // console.log(debugOffer);
+
+
+
+
+
+
+
+
+
     // On envoie une réponse à l'offre.
     doAnswer();
   
@@ -193,16 +214,94 @@ socket.on('message', function (message){
   } else if (message.type === 'answer' && isStarted) {
     
     pc.setRemoteDescription(new RTCSessionDescription(message));
+
+    // var debugAnswer = tool.stringObjectDump(message,"Receive answer >>>");
+    // console.log(debugAnswer);
   
+  
+
+
+
+
+
   // On a recu un "ice candidate" et la connexion p2p est déjà ouverte
   } else if (message.type === 'candidate' && isStarted) {
     
+    // titi: interception du type de candidature
+    //var debugMessage = tool.stringObjectDump(message,'"Receive IceCandidate Message>>>"');
+    //console.log(debugMessage);
+
+
+
     // On ajoute cette candidature à la connexion p2p. 
     var candidate = new RTCIceCandidate({
       sdpMLineIndex:message.label,
       candidate:message.candidate
     });
     
+    // ----------------------
+
+    //var debugIceCandidate = tool.stringObjectDump(handleIceCandidate,'====== candidate =======');
+    //console.log(debugIceCandidate);
+    
+
+
+    //var debugCandidate = tool.stringObjectDump(lastCandidate,'candidate');
+    var iceCandidateTesting = candidate.candidate;
+
+
+    // titi: Forcage STUN/TURN et direct p2p...
+    // suffit de mettre le type choisi a true et les autres a false
+    
+    //var directp2p     = false;
+    //var stunp2p       = false;
+    //var turnp2p       = false;
+
+    /*var forceTypeTurn = "p2p";
+    //var forceTypeTurn = "stun";
+    //var forceTypeTurn = "turn";
+    //alert ('toto');
+    if(iceCandidateTesting.indexOf('typ host') != -1) {
+      console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+      //return;
+    }
+    /**/
+     //if (iceCandidateTesting.indexOf('typ host') != -1) {
+
+
+    /*
+    else if(stunp2p && iceCandidateTesting.indexOf('srflx') == -1){
+      return;
+    } 
+    else if(turnp2p && iceCandidateTesting.indexOf('relay') == -1) {
+      return;
+    }
+    /**/
+
+
+    
+    // titi: Affichage du type de candidature
+    //var debugCandidate = tool.stringObjectDump(candidate,'"Receive IceCandidate >>>"');
+    //console.log(debugCandidate);
+
+    if (iceCandidateTesting.indexOf('typ host') != -1) {
+      console.log(" ================ p2p > host");
+    
+    } else if (iceCandidateTesting.indexOf('typ srflx') != -1) {
+      console.log(" ================ p2p > STUN...");
+    
+    } else if (iceCandidateTesting.indexOf('typ relay') != -1) {
+      console.log(" ================ p2p > TURN...");
+    
+    } else {
+      console.log(" ================ p2p > ???");   
+    }
+    /**/
+
+
+    // --------------------------------------
+
+    // On ajoute cette candidature à la connexion p2p (suite...). 
     pc.addIceCandidate(candidate);
     
     // titi: on copie le dernier candidat reçut ds une variable de contrôle
@@ -224,6 +323,7 @@ var localVideo = document.querySelector('#localVideo');
 var remoteVideo = document.querySelector('#remoteVideo');
 
 function handleUserMedia(stream) {
+  
   localStream = stream;
   attachMediaStream(localVideo, stream);
   console.log('Adding local stream.');
@@ -268,23 +368,30 @@ if ( (location.hostname != "localhost") && (location.hostname != '127.0.0.1') ) 
 /**/
 
 // On démarre peut être l'appel (si on est appelant) que quand on a toutes les 
-// conditons. Si on est l'appelé on n'ouvre que la connexion p2p   
-// isChannelReady = les deux pairs sont dans la même salle virtuelle
-//                  via websockets
+// conditions. Si on est l'appelé on n'ouvre que la connexion p2p   
+// isChannelReady = les deux pairs sont dans la même salle virtuelle  via websockets
 // localStream = on a bien accès à la caméra localement,
 // !isStarted = on a pas déjà démarré la connexion.
 // En résumé : on établit la connexion p2p que si on a la caméra et les deux
 // pairs dans la même salle virtuelle via WebSockets (donc on peut communiquer
 // via WebSockets par sendMessage()...)
 function maybeStart() {
+  console.log(">>> maybeStart()");
+  
   if (!isStarted && localStream && isChannelReady) {
+    
     // Ouverture de la connexion p2p
     createPeerConnection();
+    
+
+
     // on donne le flux video local à la connexion p2p. Va provoquer un événement 
     // onAddStream chez l'autre pair.
     pc.addStream(localStream);
+    
     // On a démarré, utile pour ne pas démarrer le call plusieurs fois
     isStarted = true;
+    
     // Si on est l'appelant on appelle. Si on est pas l'appelant, on ne fait rien.
     if (isInitiator) {
       doCall();
@@ -299,6 +406,25 @@ window.onbeforeunload = function(e){
 /////////////////////////////////////////////////////////
 
 function createPeerConnection() {
+  
+  console.log(">>> createPeerConnection() ================================");
+  /*
+  var host      = false;
+  var reflexive = false;
+  var relay     = true;
+
+  peer.onicecandidate = function(e) {
+       var ice = e.candidate;
+       if(!ice) return;
+     
+       if(host && ice.candidate.indexOf('typ host') == -1) return;
+       if(reflexive && ice.candidate.indexOf('srflx') == -1) return;
+       if(relay && ice.candidate.indexOf('relay') == -1) return;
+     
+      // POST_to_Other_Peer(ice);
+  };
+  /**/
+
   try {
     // Ouverture de la connexion p2p
     pc = new RTCPeerConnection(pc_config, pc_constraints);
@@ -306,9 +432,51 @@ function createPeerConnection() {
     // ecouteur en cas de réception de candidature
     pc.onicecandidate = handleIceCandidate;
 
+    
+    var debugIceCandidate = tool.stringObjectDump(handleIceCandidate,'====== candidate =======');
+    console.log(debugIceCandidate);
+    
+    /*// titi: pour détecter le type de candidature
+    if (pc.onicecandidate.indexOf('typ host') == -1) {
+      console.log(" ================ p2p > Direct");
+    
+    } else if (pc.onicecandidate.indexOf('srflx') == -1) {
+      console.log(" ================ p2p > STUN...");
+    
+    } else if (pc.onicecandidate.indexOf('relay') == -1) {
+      console.log(" ================ p2p > TURN...");
+    
+    } else {
+      console.log(" ================ p2p > ???");   
+    }
+
+    /**//*// titi: Et ici on peux forcer force le choix...
+    // suffit de mettre le type choisi a true et les autres a false
+    
+    var directp2p     = false;
+    var stunp2p       = false;
+    var turnp2p       = true;
+
+    if(directp2p && pc.onicecandidate.indexOf('typ host') == -1) {
+      return;
+      console
+    }
+    else if(stunp2p && pc.onicecandidate.indexOf('srflx') == -1){
+      return;
+    } 
+    else if(turnp2p && pc.onicecandidate.indexOf('relay') == -1) {
+      return;
+    }
+    /**/
+
+
+
+
     console.log('Created RTCPeerConnnection with:\n' +
       '  config: \'' + JSON.stringify(pc_config) + '\';\n' +
       '  constraints: \'' + JSON.stringify(pc_constraints) + '\'.');
+  
+
   } catch (e) {
     console.log('Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection object.');
@@ -321,8 +489,7 @@ function createPeerConnection() {
   // Ecouteur appelé quand le pair a retiré le stream vidéo de la connexion p2p
   pc.onremovestream = handleRemoteStreamRemoved;
 
-  // Data channel. Si on est l'appelant on ouvre un data channel sur la 
-  // connexion p2p
+  // Data channel. Si on est l'appelant on ouvre un data channel sur la connexion p2p
   if (isInitiator) {
     try {
       // Reliable Data Channels not yet supported in Chrome
@@ -341,14 +508,16 @@ function createPeerConnection() {
 
     // ecouteur appelé quand le data channel est ouvert
     sendChannel.onopen = handleSendChannelStateChange;
+    
     // idem quand il est fermé.
     sendChannel.onclose = handleSendChannelStateChange;
+ 
   } else {
-    // ecouteur appelé quand le pair a enregistré le data channel sur la 
-    // connexion p2p
+    // ecouteur appelé quand le pair a enregistré le data channel sur la connexion p2p
     pc.ondatachannel = gotReceiveChannel;
   }
 }
+
 
 function sendData() {
   var data = sendTextarea.value;
@@ -420,6 +589,49 @@ function handleIceCandidate(event) {
   // quand il a réussi à déterminer le host/port externe.
   console.log('handleIceCandidate event: ', event);
 
+  
+
+/*    //var debugIceCandidate = tool.stringObjectDump(handleIceCandidate,'====== candidate =======');
+    //console.log(debugIceCandidate);
+    
+    var iceCandidateTesting = event.candidate.candidate;
+    var debugCandidate = tool.stringObjectDump(iceCandidateTesting,'candidate >>>');
+    console.log(debugCandidate);
+    
+    // titi: pour détecter le type de candidature
+    if (iceCandidateTesting.indexOf('typ host') == -1) {
+      console.log(" ================ p2p > Direct");
+    
+    } else if (iceCandidateTesting.indexOf('srflx') == -1) {
+      console.log(" ================ p2p > STUN...");
+    
+    } else if (iceCandidateTesting.indexOf('relay') == -1) {
+      console.log(" ================ p2p > TURN...");
+    
+    } else {
+      console.log(" ================ p2p > ???");   
+    }
+
+    /**//*// titi: Et ici on peux forcer force le choix...
+    // suffit de mettre le type choisi a true et les autres a false
+    
+    var directp2p     = false;
+    var stunp2p       = false;
+    var turnp2p       = true;
+
+    if(directp2p && iceCandidateTesting.indexOf('typ host') == -1) {
+      return;
+      console
+    }
+    else if(stunp2p && iceCandidateTesting.indexOf('srflx') == -1){
+      return;
+    } 
+    else if(turnp2p && iceCandidateTesting.indexOf('relay') == -1) {
+      return;
+    }
+    /**/
+
+
   if (event.candidate) {
     // On envoie cette candidature à tout le monde.
     sendMessage({
@@ -429,15 +641,17 @@ function handleIceCandidate(event) {
       candidate: event.candidate.candidate});
   } else {
     
-    var debugCandidate = tool.stringObjectDump(lastCandidate,'candidate');
-    //infoIceCandidateReceive.value = lastCandidate;
-    infoIceCandidateReceive.innerHTML = debugCandidate;
+    //var debugCandidate = tool.stringObjectDump(lastCandidate,'candidate');
+    //infoIceCandidateReceive.innerHTML = debugCandidate;
     console.log('End of candidates.');
   }
 }
 
 // Exécuté par l'appelant uniquement
 function doCall() {
+  
+  console.log(">>> doCall()");
+
   // M.Buffa : les contraintes et les configurations (SDP) sont encore 
   // supportées différements selon les browsers, et certaines propriétés du 
   // standard officiel ne sont pas encore supportées... bref, c'est encore
@@ -660,4 +874,21 @@ function removeCN(sdpLines, mLineIndex) {
   sdpLines[mLineIndex] = mLineElements.join(' ');
   return sdpLines;
 }
+
+/*
+var host      = false;
+var reflexive = false;
+var relay     = true;
+
+peer.onicecandidate = function(e) {
+     var ice = e.candidate;
+     if(!ice) return;
+   
+     if(host && ice.candidate.indexOf('typ host') == -1) return;
+     if(reflexive && ice.candidate.indexOf('srflx') == -1) return;
+     if(relay && ice.candidate.indexOf('relay') == -1) return;
+   
+     POST_to_Other_Peer(ice);
+};
+/**/
 
