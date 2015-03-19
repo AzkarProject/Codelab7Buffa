@@ -42,7 +42,6 @@ var pc_config = webrtcDetectedBrowser === 'firefox' ?
   {'iceServers': [{'url': 'stun:stun.l.google.com:19302'}]};
 /**/
 
-
 // Hack titi :
 var pc_config = {'iceServers':[{'url':'stun:23.21.150.121'}]};
 pc_config.iceServers.push({url: 'stun:stun.l.google.com:19302'});
@@ -50,10 +49,15 @@ pc_config.iceServers.push({url: 'stun:stun.l.google.com:19302'});
 // pc_config.iceServers.push({url: 'stun:stun2.1.google.com:19302'}); 
 // pc_config.iceServers.push({url: 'stun:stun3.1.google.com:19302'});
 // pc_config.iceServers.push({url: 'stun:stun4.1.google.com:19302'});
+pc_config.iceServers.push({url: 'stun:stun.anyfirewall.com:3478'});
+pc_config.iceServers.push({url: 'stun:turn1.xirsys.com'});
 // Ajout de serveurs TURN
-// pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis%40mozilla.com"});
-// pc_config.iceServers.push({url: 'turn:turn.anyfirewall.com:443?transport=tcp', credential: 'webrtc', username: 'azkarproject'});
-// pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"});
+pc_config.iceServers.push({url: "turn:turn.bistri.com:80", credential: "homeo", username: "homeo"});
+pc_config.iceServers.push({url: 'turn:turn.anyfirewall.com:443?transport=tcp', credential: 'webrtc', username: 'azkarproject'});
+pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"});
+pc_config.iceServers.push({url: "turn:turn.anyfirewall.com:443?transport=tcp", credential: "webrtc", username: "webrtc"});
+pc_config.iceServers.push({url: "turn:turn1.xirsys.com:443?transport=tcp", credential: "b8631283-b642-4bfc-9222-352d79e2d793", username: "e0f4e2b6-005f-440b-87e7-76df63421d6f"});
+
 
 // -- end Hack
 /**/
