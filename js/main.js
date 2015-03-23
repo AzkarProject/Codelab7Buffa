@@ -5,10 +5,10 @@ var sendButton = document.getElementById("sendButton");
 var sendTextarea = document.getElementById("dataChannelSend");
 var receiveTextarea = document.getElementById("dataChannelReceive");
 
-// titi: pour afficher les données "Candidate finales de chaque client
+// titi: pour afficher les donnees "Candidate finales de chaque client
 var infoIceCandidateReceive = document.getElementById("infoIceCandidateReceived");
 var infoIceCandidateSend = document.getElementById("infoIceCandidateSended");
-// titi: flag de sélection de type de serveur...
+// titi: flag de selection de type de serveur...
 var validChoiceP2pStunTurn  = false;
 var forceServer = false;
 //var forceServer = "p2p";
@@ -26,15 +26,8 @@ var remoteStream;
 var turnReady;
 
 
-//var io = require('socket.io');
-// Titi - Contrôle de la version de socket.io
-// >>>> Vérification de concordance entre local et Hosted
-// console.log("**Socket.IO Version: " + require('socket.io/package').version);
-//console.log("test");
-//var toto = require('socket.io');
-
 // titi: Pkoi ce test pr firefox ????
-// titi: Et c'est quoi cette syntaxe à la mord mois le noeud ????
+// titi: Et c'est quoi cette syntaxe a la mord mois le noeud ????
 // Configuration des serveurs stun...
 /*
 var pc_config = webrtcDetectedBrowser === 'firefox' ?
@@ -57,38 +50,20 @@ pc_config.iceServers.push({url: 'turn:turn.anyfirewall.com:443?transport=tcp', c
 pc_config.iceServers.push({url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"});
 pc_config.iceServers.push({url: "turn:turn.anyfirewall.com:443?transport=tcp", credential: "webrtc", username: "webrtc"});
 pc_config.iceServers.push({url: "turn:turn1.xirsys.com:443?transport=tcp", credential: "b8631283-b642-4bfc-9222-352d79e2d793", username: "e0f4e2b6-005f-440b-87e7-76df63421d6f"});
+// -- / end Hack
 
 
-// -- end Hack
-/**/
-
-// titi: instanciation de mes outils de débugg
+// titi: instanciation de mes outils de debugg
 var tool = new utils();
 // tool.testutils('librairie utils active...');
-
-/*
-// titi: On fait au plus simple la déclaration des serveurs stun/turn
-var pc_config = {
-    iceServers: [
-        {url: "stun:23.21.150.121"},
-        {url: "stun:stun.l.google.com:19302"},
-        // {url: 'turn:turn.anyfirewall.com:443?transport=tcp', credential: 'webrtc', username: 'azkarproject'}
-        {url: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "temp20fev2015@gmail.com"}
-    ]
-}
-/**/
-
-// titi: Hack pour connaitre l'adresse Ip locale/réseau du client
-var lastCandidate;
-
 
 
 // Peer connection constraints
 // note titi: Selon le type de connexion, on peux passer des options.
 var pc_constraints = {
   'optional': [
-    {'DtlsSrtpKeyAgreement': true}, // titi: DtlsSrtpKeyAgreement est exigé pour Chrome et Firefox pour interagir.
-    {'RtpDataChannels': true} // titi: RtpDataChannels est nécessaire si nous voulons utiliser l'API DataChannels sur Firefox.
+    {'DtlsSrtpKeyAgreement': true}, // titi: DtlsSrtpKeyAgreement est exige pour Chrome et Firefox pour interagir.
+    {'RtpDataChannels': true} // titi: RtpDataChannels est necessaire si nous voulons utiliser l'API DataChannels sur Firefox.
   ]};
 
 // Set up audio and video regardless of what devices are present.
@@ -107,9 +82,6 @@ var constraints = {
           }
     };
 
-// var constraints = {video: true};
-
-
 
 /////////////////////////////////////////////
 
@@ -123,7 +95,7 @@ if (room === '') {
 }
 
 // Demande de connexion au serveur de sockets. Si on regarde le code du
-// server dans server.js on verra que si on est le premier client connecté
+// server dans server.js on verra que si on est le premier client connecte
 // on recevra un message "created", sinon un message "joined"
 var socket = io.connect();
 
@@ -132,41 +104,41 @@ if (room !== '') {
   socket.emit('create or join', room);
 }
 
-// Si on reçoit le message "created" alors on est l'initiateur du call
+// Si on recoit le message "created" alors on est l'initiateur du call
 socket.on('created', function (room){
   console.log('Created room ' + room);
   isInitiator = true;
 });
 
-// On a essayé de rejoindre une salle qui est déjà pleine (avec deux personnes)
+// On a essaye de rejoindre une salle qui est deja pleine (avec deux personnes)
 socket.on('full', function (room){
   console.log('Room ' + room + ' is full');
 });
 
-// Jamais appelé, à mon avis une trace de la version nxn
+// Jamais appele, a mon avis une trace de la version nxn
 socket.on('join', function (room){
   console.log('Another peer made a request to join room ' + room);
   console.log('This peer is the initiator of room ' + room + '!');
   isChannelReady = true;
 });
 
-// Si on reçoit le message "joined" alors on a rejoint une salle existante
-// on est pas l'initiateur, il y a déjà quelqu'un (l'appelant), donc
-// on est prêt à communiquer...
+// Si on recoit le message "joined" alors on a rejoint une salle existante
+// on est pas l'initiateur, il y a deja quelqu'un (l'appelant), donc
+// on est pret a communiquer...
 socket.on('joined', function (room){
   console.log('This peer has joined room ' + room);
   isChannelReady = true;
 });
 
-// Appelé par le serveur pour faire des traces chez les clients connectés
+// Appele par le serveur pour faire des traces chez les clients connectes
 socket.on('log', function (array){
   console.log.apply(console, array);
 });
 
 ////////////////////////////////////////////////
 
-// Envoi de message générique, le serveur broadcaste à tout le monde
-// par défaut (ce sevrait être que dans la salle courante...)
+// Envoi de message generique, le serveur broadcaste a tout le monde
+// par defaut (ce sevrait etre que dans la salle courante...)
 // Il est important de regarder dans le code de ce fichier quand on envoit
 // des messages.
 function sendMessage(message){
@@ -174,70 +146,55 @@ function sendMessage(message){
   socket.emit('message', message);
 }
  
-// Récéption de message générique.
+// Reception de message generique.
 socket.on('message', function (message){
  
 
-  if (message === 'got user media') {
-    // On ouvre peut-être la connexion p2p
-  	maybeStart();
+  console.log ("// --- Reception de message > socket.on('message')");
   
+  if (message === 'got user media') {
+    console.log ("// > On ouvre peut-etre la connexion p2p > message === if 'got user media' > maybeStart()");
+    // On ouvre peut-etre la connexion p2p
+  	maybeStart();
+    
  
- // on a recu une "offre"
+  // on a recu une "offre"
   } else if (message.type === 'offer') {
-
+  console.log ("// > on a recu une 'offre' > else if message.type === 'offer'");
     // On initialise la connexion p2p si on est pas l'apellant
-    // et si elle n'est pas déjàs ouverte...
+    // et si elle n'est pas dejas ouverte...
     if (!isInitiator && !isStarted) {
+      console.log ("// >>>>>>>> if (!isInitiator && !isStarted) > maybeStart()");
       maybeStart();
     }
 
-    // si on reçoit une offre, on va initialiser dans la connexion p2p
-    // la "remote Description", avec le message envoyé par l'autre pair 
+    // si on recoit une offre, on va initialiser dans la connexion p2p
+    // la "remote Description", avec le message envoye par l'autre pair 
     // (et recu ici)
+    console.log ("// >>>> on itinialise la remote description ds la connexion p2p");
+    console.log ("// >>>> avec le message de recu de l'autre pair.... ");
+    console.log ("// >>>> pc.setRemoteDescription(new RTCSessionDescription(message)); ");
     pc.setRemoteDescription(new RTCSessionDescription(message));
 
-    
-    // var debugOffer = tool.stringObjectDump(message,"Receive offer >>>");
-    // console.log(debugOffer);
-
-
-
-
-
-
-
-
-
-    // On envoie une réponse à l'offre.
+    // On envoie une reponse a l'offre.
+    console.log ("// >>>> // On envoie une reponse a l'offre > doAnswer();");
     doAnswer();
   
   
-  // On a reçu une réponse à l'offre envoyée, on initialise la 
+  // On a recu une reponse a l'offre envoyee, on initialise la 
   // "remote description" du pair.
   } else if (message.type === 'answer' && isStarted) {
-    
+    console.log ("// > On a recu une reponse a l'offre envoyee > else if (message.type === 'answer' && isStarted)");
+    console.log ("// >>>> on itinialise la remote description du pair > ");
+    console.log ("// >>>> pc.setRemoteDescription(new RTCSessionDescription(message)); ");
     pc.setRemoteDescription(new RTCSessionDescription(message));
 
-    // var debugAnswer = tool.stringObjectDump(message,"Receive answer >>>");
-    // console.log(debugAnswer);
-  
-  
 
-
-
-
-
-  // On a recu un "ice candidate" et la connexion p2p est déjà ouverte
+  // On a recu un "ice candidate" et la connexion p2p est deja ouverte
   } else if (message.type === 'candidate' && isStarted) {
-    
-    // titi: interception du type de candidature
-    //var debugMessage = tool.stringObjectDump(message,'"Receive IceCandidate Message>>>"');
-    //console.log(debugMessage);
-
-
-
-    // On ajoute cette candidature à la connexion p2p. 
+    console.log ("// > On a recu un 'ice candidate' et la connexion p2p est deja ouverte > else if (message.type === 'candidate' && isStarted)");
+    console.log ("// >>>> On cree une nouvelle candidature a partir du message >  var candidate = new RTCIceCandidate({..}])");
+    // On ajoute cette candidature a la connexion p2p. 
     var candidate = new RTCIceCandidate({
       sdpMLineIndex:message.label,
       candidate:message.candidate
@@ -285,39 +242,36 @@ socket.on('message', function (message){
 
     
     // titi: Affichage du type de candidature
-    //var debugCandidate = tool.stringObjectDump(candidate,'"Receive IceCandidate >>>"');
-    //console.log(debugCandidate);
-
     if (iceCandidateTesting.indexOf('typ host') != -1) {
-      console.log(" ================ p2p > host");
-    
+      console.log("// >>>>  type de candidature p2p > host");
     } else if (iceCandidateTesting.indexOf('typ srflx') != -1) {
-      console.log(" ================ p2p > STUN...");
-    
+      console.log("// >>>>  type de candidature p2p > STUN...");
     } else if (iceCandidateTesting.indexOf('typ relay') != -1) {
-      console.log(" ================ p2p > TURN...");
-    
+      console.log("// >>>>  type de candidature p2p > TURN...");
     } else {
-      console.log(" ================ p2p > ???");   
+      console.log("// >>>>  type de candidature p2p > ???");   
     }
     /**/
 
 
-    // --------------------------------------
+    // -------------------------------------------
 
-    // On ajoute cette candidature à la connexion p2p (suite...). 
+    // On ajoute cette candidature a la connexion p2p (suite...). 
+    console.log ("// >>>> On ajoute cette candidature a la connexion p2p >  pc.addIceCandidate(candidate);");
     pc.addIceCandidate(candidate);
     
-    // titi: on copie le dernier candidat reçut ds une variable de contrôle
+    // titi: on copie le dernier candidat recut ds une variable de contrôle
     lastCandidate = candidate;
  
   // 
   } else if (message === 'bye' && isStarted) {
+    console.log ("// > On a recu un message de deconnexion > else if (message === 'bye' && isStarted)");
+    console.log ("// >>>> On coupe la remote video >  handleRemoteHangup()");
     handleRemoteHangup();
   }
  
- // titi: Modification du message pour meilleure lisibilité logs ...
- console.log('Received message: >>>', message);
+ // titi: Modification du message pour meilleure lisibilite logs ...
+ // console.log('Received message: >>>', message);
 
 });
 
@@ -332,7 +286,7 @@ function handleUserMedia(stream) {
   attachMediaStream(localVideo, stream);
   console.log('Adding local stream.');
 
-  // On envoie un message à tout le monde disant qu'on a bien
+  // On envoie un message a tout le monde disant qu'on a bien
   // overt la connexion video avec la web cam.
   sendMessage('got user media');
 
@@ -347,11 +301,11 @@ function handleUserMediaError(error){
 }
 
 
-
-
-
 getUserMedia(constraints, handleUserMedia, handleUserMediaError);
 console.log('Getting user media with constraints', constraints);
+
+
+
 
 
 // On regarde si on a besoin d'un serveur TURN que si on est pas en localhost
@@ -365,42 +319,50 @@ if ( (location.hostname != "localhost") && (location.hostname != '127.0.0.1') ) 
 
 
 // titi >>> Pour tests et forcer le chargement du turn
-// console.log('@>>>> requestTurn forcé');
+// console.log('@>>>> requestTurn force');
 // requestTurn('https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913');
 
 
 /**/
 
-// On démarre peut être l'appel (si on est appelant) que quand on a toutes les 
-// conditions. Si on est l'appelé on n'ouvre que la connexion p2p   
-// isChannelReady = les deux pairs sont dans la même salle virtuelle  via websockets
-// localStream = on a bien accès à la caméra localement,
-// !isStarted = on a pas déjà démarré la connexion.
-// En résumé : on établit la connexion p2p que si on a la caméra et les deux
-// pairs dans la même salle virtuelle via WebSockets (donc on peut communiquer
+// On demarre peut etre l'appel (si on est appelant) que quand on a toutes les 
+// conditions. Si on est l'appele on n'ouvre que la connexion p2p   
+// isChannelReady = les deux pairs sont dans la meme salle virtuelle  via websockets
+// localStream = on a bien acces a la camera localement,
+// !isStarted = on a pas deja demarre la connexion.
+// En resume : on etablit la connexion p2p que si on a la camera et les deux
+// pairs dans la meme salle virtuelle via WebSockets (donc on peut communiquer
 // via WebSockets par sendMessage()...)
 function maybeStart() {
-  console.log(">>> maybeStart()");
+  
   
   if (!isStarted && localStream && isChannelReady) {
-    
+    console.log(">>> maybeStart() > if (!isStarted && localStream && isChannelReady)");
+    console.log(">>>>>> // Ouverture de la connexion p2p >createPeerConnection()");
     // Ouverture de la connexion p2p
     createPeerConnection();
     
 
 
-    // on donne le flux video local à la connexion p2p. Va provoquer un événement 
+    // on donne le flux video local a la connexion p2p. Va provoquer un evenement 
     // onAddStream chez l'autre pair.
+    console.log(">>>>>> // on donne le flux video local a la connexion p2p");
+    console.log(">>>>>> // Va provoquer un evenement onAddStream chez l'autre pair.")
+    console.log(">>>>>> pc.addStream(localStream)");
     pc.addStream(localStream);
     
-    // On a démarré, utile pour ne pas démarrer le call plusieurs fois
+    // On a demarre, utile pour ne pas demarrer le call plusieurs fois
+   console.log(">>>>>> // On a demarre, utile pour ne pas demarrer le call plusieurs fois > isStarted = true")
     isStarted = true;
     
     // Si on est l'appelant on appelle. Si on est pas l'appelant, on ne fait rien.
+    console.log(">>>>>> // Si on est l'appelant on appelle. Si on est pas l'appelant, on ne fait rien.")
     if (isInitiator) {
-      doCall();
+       // console.log(">>>>>> if (isInitiator) > doCall() ");
+       // doCall();
     }
-  }
+    doCall();
+  } 
 }
 
 window.onbeforeunload = function(e){
@@ -412,114 +374,94 @@ window.onbeforeunload = function(e){
 function createPeerConnection() {
   
   console.log(">>> createPeerConnection() ================================");
-  /*
-  var host      = false;
-  var reflexive = false;
-  var relay     = true;
-
-  peer.onicecandidate = function(e) {
-       var ice = e.candidate;
-       if(!ice) return;
-     
-       if(host && ice.candidate.indexOf('typ host') == -1) return;
-       if(reflexive && ice.candidate.indexOf('srflx') == -1) return;
-       if(relay && ice.candidate.indexOf('relay') == -1) return;
-     
-      // POST_to_Other_Peer(ice);
-  };
-  /**/
 
   try {
+    
     // Ouverture de la connexion p2p
+    console.log ( '// try > pc = new RTCPeerConnection(pc_config, pc_constraints)');
     pc = new RTCPeerConnection(pc_config, pc_constraints);
 
-    // ecouteur en cas de réception de candidature
+    console.log ( "// ecouteur reception de candidature > pc.onicecandidate = handleIceCandidate");
     pc.onicecandidate = handleIceCandidate;
 
+    // ---- >>> débugg
     
-    var debugIceCandidate = tool.stringObjectDump(handleIceCandidate,'====== candidate =======');
-    console.log(debugIceCandidate);
+    // var debugIceCandidate = tool.stringObjectDump(handleIceCandidate,'====== candidate =======');
+    // console.log(debugIceCandidate);
     
-    /*// titi: pour détecter le type de candidature
-    if (pc.onicecandidate.indexOf('typ host') == -1) {
-      console.log(" ================ p2p > Direct");
+    // var debugPC = tool.stringObjectDump(pc,'====== objet pc =======');
+    // console.log(debugPC);
+
+    // ---- /// débugg  
     
-    } else if (pc.onicecandidate.indexOf('srflx') == -1) {
-      console.log(" ================ p2p > STUN...");
-    
-    } else if (pc.onicecandidate.indexOf('relay') == -1) {
-      console.log(" ================ p2p > TURN...");
-    
-    } else {
-      console.log(" ================ p2p > ???");   
-    }
 
-    /**//*// titi: Et ici on peux forcer force le choix...
-    // suffit de mettre le type choisi a true et les autres a false
-    
-    var directp2p     = false;
-    var stunp2p       = false;
-    var turnp2p       = true;
+    // titi - Forcage des serveurs TURN...
+    // Voir http://www.w3.org/TR/webrtc/#idl-def-RTCIceTransportPolicy
+    // "none": ICE n'envoie ni ne recevoit des paquets au niveau de ce point.
+    // "relay": ICE utilise uniquement des candidats TURN. par exemple pour reduire les fuites d'adresses IP dans certains cas d'utilisation.
+    // "all": ICE peut utiliser ne importe quel type de candidats lorsque cette valeur est specifiee.
+    // pc_config.iceTransportPolicy = "none";
+        
 
-    if(directp2p && pc.onicecandidate.indexOf('typ host') == -1) {
-      return;
-      console
-    }
-    else if(stunp2p && pc.onicecandidate.indexOf('srflx') == -1){
-      return;
-    } 
-    else if(turnp2p && pc.onicecandidate.indexOf('relay') == -1) {
-      return;
-    }
-    /**/
-
-
-
-
-    console.log('Created RTCPeerConnnection with:\n' +
+    console.log('// Created RTCPeerConnnection with:\n' +
       '  config: \'' + JSON.stringify(pc_config) + '\';\n' +
       '  constraints: \'' + JSON.stringify(pc_constraints) + '\'.');
   
 
   } catch (e) {
-    console.log('Failed to create PeerConnection, exception: ' + e.message);
+    console.log('// catch(e) > Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection object.');
+    console.log(">>> // createPeerConnection() ================================");
       return;
   }
-  // Ecouteur appelé quand le pair a enregistré dans la connexion p2p son
-  // stream vidéo.
+  
+  // Ecouteur appelé quand le pair a enregistré dans la connexion p2p son stream video.
+  console.log ( "// ecouteur reception ajout stream > pc.onicecandidate = handleIceCandidate");
   pc.onaddstream = handleRemoteStreamAdded;
 
-  // Ecouteur appelé quand le pair a retiré le stream vidéo de la connexion p2p
+  // Ecouteur appelé quand le pair a retiré le stream video de la connexion p2p
+  console.log ( "// ecouteur reception retrait stream > pc.onaddstream = handleRemoteStreamAdded");
   pc.onremovestream = handleRemoteStreamRemoved;
 
   // Data channel. Si on est l'appelant on ouvre un data channel sur la connexion p2p
   if (isInitiator) {
+    console.log ( "// if is initiator >...");
+    
+    
     try {
       // Reliable Data Channels not yet supported in Chrome
-      sendChannel = pc.createDataChannel("sendDataChannel",
-        {reliable: false});
+      console.log ( '// >>>> try > sendChannel = pc.createDataChannel("sendDataChannel",{reliable: false} )');
+      sendChannel = pc.createDataChannel("sendDataChannel",{reliable: false});
 
-      // écouteur de message reçus
+      // ecouteur de message recus
+      console.log ( "// >>>> ecouteur de message recus > sendChannel.onmessage = handleMessage");
       sendChannel.onmessage = handleMessage;
-
-      trace('Created send data channel');
+      // trace('Created send data channel');
     } catch (e) {
       alert('Failed to create data channel. ' +
             'You need Chrome M25 or later with RtpDataChannel enabled');
-      trace('createDataChannel() failed with exception: ' + e.message);
+      //trace('createDataChannel() failed with exception: ' + e.message);
+      console.log ( '// >>>> catch(e) > failed with exception: ' + e.message);
     }
 
-    // ecouteur appelé quand le data channel est ouvert
+    // ecouteur appele quand le data channel est ouvert
+    console.log ( "// >> ecouteur ouverture data Channel > sendChannel.onopen = handleSendChannelStateChange");
     sendChannel.onopen = handleSendChannelStateChange;
     
-    // idem quand il est fermé.
+    // idem quand il est ferme.
+    console.log ( "// >> ecouteur fermeture data Channel >  sendChannel.onclose = handleSendChannelStateChange");
     sendChannel.onclose = handleSendChannelStateChange;
  
   } else {
-    // ecouteur appelé quand le pair a enregistré le data channel sur la connexion p2p
+    console.log ( "// if is NOT initiator >...");
+    // ecouteur appele quand le pair a enregistre le data channel sur la connexion p2p
+    console.log ( "// >> ecouteur enregistrement data Channel sur connexion p2p > pc.ondatachannel = gotReceiveChannel");
     pc.ondatachannel = gotReceiveChannel;
   }
+
+  console.log(">>> // createPeerConnection() ================================");
+
+
 }
 
 
@@ -549,8 +491,8 @@ function sendData() {
 //   dataChannelSend.placeholder = "Press Start, enter some text, then press Send.";
 // }
 
-// Le data channel est créé par l'appelant. Si on entre dans cet écouteur
-// C'est qu'on est l'appelé. On se contente de le récupérer via l'événement
+// Le data channel est cree par l'appelant. Si on entre dans cet ecouteur
+// C'est qu'on est l'appele. On se contente de le recuperer via l'evenement
 function gotReceiveChannel(event) {
   trace('Receive Channel Callback');
   sendChannel = event.channel;
@@ -568,12 +510,21 @@ function handleSendChannelStateChange() {
   var readyState = sendChannel.readyState;
   trace('Send channel state is: ' + readyState);
   enableMessageInterface(readyState == "open");
+  //pc.addStream(localStream);
+  //var debugCandidate = tool.stringObjectDump(lastCandidate,'candidate');
+  console.log("////////////// LAST LOG 1/////////////////////");
+  //var lastDebug1 = tool.stringObjectDump(pc,'pc object');
+  //console.log(lastDebug1);
 }
 
 function handleReceiveChannelStateChange() {
   var readyState = sendChannel.readyState;
   trace('Receive channel state is: ' + readyState);
   enableMessageInterface(readyState == "open");
+  console.log("////////////// LAST LOG 2 /////////////////////");
+  //var lastDebug2 = tool.stringObjectDump(pc,'pc object');
+  //console.log(lastDebug2);
+
 }
 
 function enableMessageInterface(shouldEnable) {
@@ -588,56 +539,31 @@ function enableMessageInterface(shouldEnable) {
   }
 }
 
+
+
+// titi: Comptage et contrôle des ICE candidates
+var iceCandidateTimeStamp = 0;
+var iceCandidateNumber = 1;
+var lastCandidate;
+
 function handleIceCandidate(event) {
-  // On a recu une candidature, c'est le serveur STUN qui déclenche l'event
-  // quand il a réussi à déterminer le host/port externe.
-  console.log('handleIceCandidate event: ', event);
-
   
+  // On a recu une candidature, c'est le serveur STUN qui declenche l'event
+  // quand il a reussi a determiner le host/port externe.
+  console.log('handleIceCandidate(event.iceCandidateTimeStamp)', event.timeStamp );
+  if (event.timeStamp) {
+     
+  }
+  // console.log('handleIceCandidate event: ', event);
+  // iceCandidateNumber 
+  if ( iceCandidateTimeStamp === 0) {
+  console.log('handleIceCandidate(event)', event);
+  iceCandidateNumber += 1;
 
-/*    //var debugIceCandidate = tool.stringObjectDump(handleIceCandidate,'====== candidate =======');
-    //console.log(debugIceCandidate);
-    
-    var iceCandidateTesting = event.candidate.candidate;
-    var debugCandidate = tool.stringObjectDump(iceCandidateTesting,'candidate >>>');
-    console.log(debugCandidate);
-    
-    // titi: pour détecter le type de candidature
-    if (iceCandidateTesting.indexOf('typ host') == -1) {
-      console.log(" ================ p2p > Direct");
-    
-    } else if (iceCandidateTesting.indexOf('srflx') == -1) {
-      console.log(" ================ p2p > STUN...");
-    
-    } else if (iceCandidateTesting.indexOf('relay') == -1) {
-      console.log(" ================ p2p > TURN...");
-    
-    } else {
-      console.log(" ================ p2p > ???");   
-    }
-
-    /**//*// titi: Et ici on peux forcer force le choix...
-    // suffit de mettre le type choisi a true et les autres a false
-    
-    var directp2p     = false;
-    var stunp2p       = false;
-    var turnp2p       = true;
-
-    if(directp2p && iceCandidateTesting.indexOf('typ host') == -1) {
-      return;
-      console
-    }
-    else if(stunp2p && iceCandidateTesting.indexOf('srflx') == -1){
-      return;
-    } 
-    else if(turnp2p && iceCandidateTesting.indexOf('relay') == -1) {
-      return;
-    }
-    /**/
-
+  }
 
   if (event.candidate) {
-    // On envoie cette candidature à tout le monde.
+    // On envoie cette candidature a tout le monde.
     sendMessage({
       type: 'candidate',
       label: event.candidate.sdpMLineIndex,
@@ -645,20 +571,21 @@ function handleIceCandidate(event) {
       candidate: event.candidate.candidate});
   } else {
     
-    //var debugCandidate = tool.stringObjectDump(lastCandidate,'candidate');
-    //infoIceCandidateReceive.innerHTML = debugCandidate;
+    // alert('fin des candidatures...');
     console.log('End of candidates.');
+    //var wtf3 = tool.traceObjectDump(pc.localDescription,'objet pc.localDescription >>> [object RTCSessionDescription]');  
+    //var wtf4 = tool.traceObjectDump(pc.remoteDescription,'objet pc.remoteDescription >>> [object RTCSessionDescription]');
   }
 }
 
-// Exécuté par l'appelant uniquement
+// Execute par l'appelant uniquement
 function doCall() {
   
   console.log(">>> doCall()");
 
   // M.Buffa : les contraintes et les configurations (SDP) sont encore 
-  // supportées différements selon les browsers, et certaines propriétés du 
-  // standard officiel ne sont pas encore supportées... bref, c'est encore
+  // supportees differements selon les browsers, et certaines proprietes du 
+  // standard officiel ne sont pas encore supportees... bref, c'est encore
   // un peu le bazar, d'où des traitement bizarres ici par exemple...
   var constraints = {'optional': [], 'mandatory': {'MozDontOfferDataChannel': true}};
   // temporary measure to remove Moz* constraints in Chrome
@@ -670,20 +597,24 @@ function doCall() {
      }
    }
   constraints = mergeConstraints(constraints, sdpConstraints);
-  console.log('Sending offer to peer, with constraints: \n' +
+  console.log('>>>>>> Sending offer to peer, with constraints: \n' +
     '  \'' + JSON.stringify(constraints) + '\'.');
 
   // Envoi de l'offre. Normalement en retour on doit recevoir une "answer"
+  console.log(">>>>>> // Envoi de l'offre. Normalement en retour on doit recevoir une 'answer'");
+  console.log(">>>>>> pc.createOffer(setLocalAndSendMessage, null, constraints)");
   pc.createOffer(setLocalAndSendMessage, null, constraints);
+  console.log(">>> / doCall()");
 }
 
-// Exécuté par l'appelé uniquement...
+// Execute par l'appele uniquement...
 function doAnswer() {
-  console.log('Sending answer to peer.');
+  console.log('>>> doAnswer() / > Sending answer to peer.');
   pc.createAnswer(setLocalAndSendMessage, null, sdpConstraints);
 }
 
 function mergeConstraints(cons1, cons2) {
+  console.log('>>> mergeConstraints(cons1, cons2) / > ???');
   var merged = cons1;
   for (var name in cons2.mandatory) {
     merged.mandatory[name] = cons2.mandatory[name];
@@ -694,12 +625,12 @@ function mergeConstraints(cons1, cons2) {
 
 // callback de createAnswer et createOffer, ajoute une configuration locale SDP
 // A la connexion p2p, lors de l'appel de createOffer/answer par un pair.
-// Envoie aussi la description par WebSocket. Voir le traitement de la réponse
-// au début du fichier sans socket.on("message" , ...) partie "answer" et "offer"
+// Envoie aussi la description par WebSocket. Voir le traitement de la reponse
+// au debut du fichier sans socket.on("message" , ...) partie "answer" et "offer"
 function setLocalAndSendMessage(sessionDescription) {
   // Set Opus as the preferred codec in SDP if Opus is present.
-  // M.Buffa : là c'est de la tambouille compliquée pour modifier la 
-  // configuration SDP pour dire qu'on préfère un codec nommé OPUS (?)
+  // M.Buffa : la c'est de la tambouille compliquee pour modifier la 
+  // configuration SDP pour dire qu'on prefere un codec nomme OPUS (?)
   sessionDescription.sdp = preferOpus(sessionDescription.sdp);
 
   pc.setLocalDescription(sessionDescription);
@@ -709,12 +640,12 @@ function setLocalAndSendMessage(sessionDescription) {
 }
 
 
-// titi: inutile si les stun/turn sont préalablement renseignés ???
+// titi: inutile si les stun/turn sont prealablement renseignes ???
 /*
 // regarde si le serveur turn de la configuration de connexion
-// (pc_config) existe, sinon récupère l'IP/host d'un serveur
-// renvoyé par le web service computeengineondemand.appspot.com
-// de google. La requête se fait en Ajax, résultat renvoyé en JSON.
+// (pc_config) existe, sinon recupere l'IP/host d'un serveur
+// renvoye par le web service computeengineondemand.appspot.com
+// de google. La requete se fait en Ajax, resultat renvoye en JSON.
 function requestTurn(turn_url) {
   
   
@@ -758,8 +689,8 @@ function requestTurn(turn_url) {
 }
 /**/
 
-// Ecouteur de onremotestream : permet de voir la vidéo du pair distant dans 
-// l'élément HTML remoteVideo
+// Ecouteur de onremotestream : permet de voir la video du pair distant dans 
+// l'element HTML remoteVideo
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
  // reattachMediaStream(miniVideo, localVideo);
@@ -767,7 +698,7 @@ function handleRemoteStreamAdded(event) {
   remoteStream = event.stream;
   //  waitForRemoteVideo();
 
-  // titi: on regarde si on trouves pas des données ICE Candidate ds le flux vidéo apellant
+  // titi: on regarde si on trouves pas des donnees ICE Candidate ds le flux video apellant
   // var objectDebugg = tool.stringObjectDump(remoteStream,"remoteStream");
   // alert (objectDebugg);
   // Bon, au final ca donne rien...
@@ -775,7 +706,7 @@ function handleRemoteStreamAdded(event) {
 }
 
 function handleRemoteStreamRemoved(event) {
-  console.log('Remote stream removed. Event: ', event);
+  console.log("Remote stream removed. Event: ", event);
 }
 
 // bouton "on raccroche"
@@ -788,11 +719,13 @@ function hangup() {
 function handleRemoteHangup() {
   console.log('Session terminated.');
   stop();
+  // titi: Test en laissant isinitiator a true...
   isInitiator = false;
 }
 
 // Fermeture de la connexion p2p
 function stop() {
+  // titi: Test en laissant isStarted a true...
   isStarted = false;
   // isAudioMuted = false;
   // isVideoMuted = false;

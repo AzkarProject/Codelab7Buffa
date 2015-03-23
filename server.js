@@ -50,7 +50,7 @@ io.sockets.on('connection', function (socket){
 	//socket.broadcast.emit('message', message); // should be room only
 
 	function log(){
-		var array = [">>> "];
+	  var array = ["server > io.socket.on >log () >>> "];
 	  for (var i = 0; i < arguments.length; i++) {
 	  	array.push(arguments[i]);
 	  }
@@ -58,7 +58,7 @@ io.sockets.on('connection', function (socket){
 	}
 	
 	socket.on('message', function (message) {
-		log('Got message: ', message);
+		// log('Got message: ', message);
 		socket.broadcast.emit('message', message); // should be room only
 	});
 

@@ -1,7 +1,7 @@
 
 var utils = function() {
 
-    console.log('utils()');
+    // console.log('utils()');
 
     /*// Juste pour tester si le js est bien apellé...
     function testutils() {
@@ -13,6 +13,21 @@ var utils = function() {
     this.testutils = function(text) {
         alert ('utils.js > testutils('+ text + ')');
       };
+
+    // Analyse rapide d'un objet
+    // On regarde les propriétes de l'objet...
+    this.analyseObjectProperties = function(obj, name){
+        //this.result = "[ " + name + " ]\n";
+        var props = "[ " + name + " ]\n";
+        for (prop in obj){ props+= prop +  " => " +obj[prop] + "\n"; }
+        //alert (props)
+        return props;
+    };
+
+
+
+
+
 
     // Equivalent du Var_Dump
     // Source : http://trioniclabs.com/2012/09/javascript-var_dump-equivalent/  
@@ -108,6 +123,9 @@ var utils = function() {
       // this.showResult();
       return this.result;
     }
+
+
+
 
 
     // Trier un tableau d'objets 
