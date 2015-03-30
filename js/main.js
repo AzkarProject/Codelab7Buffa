@@ -150,17 +150,21 @@ function sendMessage(message){
 socket.on('message', function (message){
  
 
-  console.log ("// --- Reception de message > socket.on('message')");
+  // console.log ("// --- Reception de message > socket.on('message')");
   
   if (message === 'got user media') {
-    console.log ("// > On ouvre peut-etre la connexion p2p > message === if 'got user media' > maybeStart()");
+    // console.log ("// > On ouvre peut-etre la connexion p2p > message === if 'got user media' > maybeStart()");
+    console.log ("// Message 'got user media'");
+    console.log ("// >>>>>>>> maybeStart() (On ouvre peut-etre la connexion p2p)");
     // On ouvre peut-etre la connexion p2p
   	maybeStart();
     
  
   // on a recu une "offre"
   } else if (message.type === 'offer') {
-  console.log ("// > on a recu une 'offre' > else if message.type === 'offer'");
+    console.log ("// Message 'offer' ");
+
+    //console.log ("// > on a recu une 'offre' > else if message.type === 'offer'");
     // On initialise la connexion p2p si on est pas l'apellant
     // et si elle n'est pas dejas ouverte...
     if (!isInitiator && !isStarted) {
@@ -184,7 +188,7 @@ socket.on('message', function (message){
   // On a recu une reponse a l'offre envoyee, on initialise la 
   // "remote description" du pair.
   } else if (message.type === 'answer' && isStarted) {
-    console.log ("// > On a recu une reponse a l'offre envoyee > else if (message.type === 'answer' && isStarted)");
+    console.log ("// Message 'answer'(on a recu une reponse a l'offre envoyee)");
     console.log ("// >>>> on itinialise la remote description du pair > ");
     console.log ("// >>>> pc.setRemoteDescription(new RTCSessionDescription(message)); ");
     pc.setRemoteDescription(new RTCSessionDescription(message));
@@ -192,8 +196,8 @@ socket.on('message', function (message){
 
   // On a recu un "ice candidate" et la connexion p2p est deja ouverte
   } else if (message.type === 'candidate' && isStarted) {
-    console.log ("// > On a recu un 'ice candidate' et la connexion p2p est deja ouverte > else if (message.type === 'candidate' && isStarted)");
-    console.log ("// >>>> On cree une nouvelle candidature a partir du message >  var candidate = new RTCIceCandidate({..}])");
+    console.log ("// Message 'candidate' (on reçoit un Ice Candidate)");
+    // console.log ("// >>>> On cree une nouvelle candidature a partir du message >  var candidate = new RTCIceCandidate({..}])");
     // On ajoute cette candidature a la connexion p2p. 
     var candidate = new RTCIceCandidate({
       sdpMLineIndex:message.label,
@@ -208,7 +212,22 @@ socket.on('message', function (message){
 
 
     //var debugCandidate = tool.stringObjectDump(lastCandidate,'candidate');
+   
+    // titi: Affichage du type de candidature 
     var iceCandidateTesting = candidate.candidate;
+    if (iceCandidateTesting.indexOf('typ host') != -1) {
+      console.log("// >>>>  type de candidature p2p > host");
+    } else if (iceCandidateTesting.indexOf('typ srflx') != -1) {
+      console.log("// >>>>  type de candidature p2p > STUN...");
+    } else if (iceCandidateTesting.indexOf('typ relay') != -1) {
+      console.log("// >>>>  type de candidature p2p > TURN...");
+    } else {
+      console.log("// >>>>  type de candidature p2p > ???");   
+    }
+    /**/
+
+    
+
 
 
     // titi: Forcage STUN/TURN et direct p2p...
@@ -241,31 +260,21 @@ socket.on('message', function (message){
 
 
     
-    // titi: Affichage du type de candidature
-    if (iceCandidateTesting.indexOf('typ host') != -1) {
-      console.log("// >>>>  type de candidature p2p > host");
-    } else if (iceCandidateTesting.indexOf('typ srflx') != -1) {
-      console.log("// >>>>  type de candidature p2p > STUN...");
-    } else if (iceCandidateTesting.indexOf('typ relay') != -1) {
-      console.log("// >>>>  type de candidature p2p > TURN...");
-    } else {
-      console.log("// >>>>  type de candidature p2p > ???");   
-    }
-    /**/
+
 
 
     // -------------------------------------------
 
     // On ajoute cette candidature a la connexion p2p (suite...). 
-    console.log ("// >>>> On ajoute cette candidature a la connexion p2p >  pc.addIceCandidate(candidate);");
+    // console.log ("// >>>> On ajoute cette candidature a la connexion p2p >  pc.addIceCandidate(candidate);");
     pc.addIceCandidate(candidate);
     
     // titi: on copie le dernier candidat recut ds une variable de contrôle
-    lastCandidate = candidate;
+    // lastCandidate = candidate;
  
   // 
   } else if (message === 'bye' && isStarted) {
-    console.log ("// > On a recu un message de deconnexion > else if (message === 'bye' && isStarted)");
+    console.log ("// Message 'bye'");
     console.log ("// >>>> On coupe la remote video >  handleRemoteHangup()");
     handleRemoteHangup();
   }
@@ -352,15 +361,19 @@ function maybeStart() {
     pc.addStream(localStream);
     
     // On a demarre, utile pour ne pas demarrer le call plusieurs fois
-   console.log(">>>>>> // On a demarre, utile pour ne pas demarrer le call plusieurs fois > isStarted = true")
+    console.log(">>>>>> // On a demarre, utile pour ne pas demarrer le call plusieurs fois > isStarted = true")
     isStarted = true;
     
     // Si on est l'appelant on appelle. Si on est pas l'appelant, on ne fait rien.
+    // note titi: provoque bug d'ouverture du stram distant en cas de déco/reco...
+    // note titi: pour débug, faire un docall() systématique et + de problèmes de décco/reco
+    /*// Désactivé >>>>>
     console.log(">>>>>> // Si on est l'appelant on appelle. Si on est pas l'appelant, on ne fait rien.")
     if (isInitiator) {
-       // console.log(">>>>>> if (isInitiator) > doCall() ");
-       // doCall();
+       console.log(">>>>>> if (isInitiator) > doCall() ");
+       doCall();
     }
+    /**/// Remplacé par >>>
     doCall();
   } 
 }
@@ -548,7 +561,20 @@ var lastCandidate;
 
 function handleIceCandidate(event) {
   
-  // On a recu une candidature, c'est le serveur STUN qui declenche l'event
+  
+  if (event.target.iceGatheringState == "complete") {
+      console.log('!!!!!!!!!!!!!!!!!!!!!! ------------ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+
+
+      //local.createOffer(function(offer) {
+      //console.log("Offer with ICE candidates: " + offer.sdp);
+      //signalingChannel.send(offer.sdp); 5
+  }
+
+
+
+
+  /*// On a recu une candidature, c'est le serveur STUN qui declenche l'event
   // quand il a reussi a determiner le host/port externe.
   console.log('handleIceCandidate(event.iceCandidateTimeStamp)', event.timeStamp );
   if (event.timeStamp) {
@@ -561,6 +587,7 @@ function handleIceCandidate(event) {
   iceCandidateNumber += 1;
 
   }
+  /**/
 
   if (event.candidate) {
     // On envoie cette candidature a tout le monde.

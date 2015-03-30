@@ -68,9 +68,13 @@ io.sockets.on('connection', function (socket){
 		// -- reprise original
 		log('Room ' + room + ' has ' + numClients + ' client(s)');
 		log('Request to create or join room', room);
+		
 		if (numClients == 0){
 			socket.join(room);
 			socket.emit('created', room);
+		// >>>>>>>>>>>Hack titi: 
+		// Désactivation de la limite clients pour voir ce que ca donne...
+		// Désactivation ----->
 		} else if (numClients == 1) {
 			io.sockets.in(room).emit('join', room);
 			socket.join(room);
@@ -78,6 +82,14 @@ io.sockets.on('connection', function (socket){
 		} else { // max two clients
 			socket.emit('full', room);
 		}
+		/*/// Remplacé par ------>
+		} else if (numClients >= 1) {
+			io.sockets.in(room).emit('join', room);
+			socket.join(room);
+			socket.emit('joined', room);
+		}
+		/**/// >>>>>>>>>>>>>>>> End Hack
+
 	});
 	
 
