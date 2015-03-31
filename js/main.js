@@ -196,7 +196,8 @@ socket.on('message', function (message){
 
   // On a recu un "ice candidate" et la connexion p2p est deja ouverte
   } else if (message.type === 'candidate' && isStarted) {
-    console.log ("// Message 'candidate' (on reçoit un Ice Candidate)");
+    console.log ("// ");
+    console.log ("// Message 'candidate' (on recoit un Ice Candidate)");
     // console.log ("// >>>> On cree une nouvelle candidature a partir du message >  var candidate = new RTCIceCandidate({..}])");
     // On ajoute cette candidature a la connexion p2p. 
     var candidate = new RTCIceCandidate({
@@ -225,9 +226,6 @@ socket.on('message', function (message){
       console.log("// >>>>  type de candidature p2p > ???");   
     }
     /**/
-
-    
-
 
 
     // titi: Forcage STUN/TURN et direct p2p...
@@ -258,16 +256,14 @@ socket.on('message', function (message){
     }
     /**/
 
-
-    
-
-
-
     // -------------------------------------------
-
     // On ajoute cette candidature a la connexion p2p (suite...). 
-    // console.log ("// >>>> On ajoute cette candidature a la connexion p2p >  pc.addIceCandidate(candidate);");
+    console.log ("// >>>> On ajoute cette candidature a la connexion p2p >  pc.addIceCandidate(candidate);");
+    console.log("----------------------------------addIceCandidate-----------------------------------------")
+    var DebugCandidate = tool.stringObjectDump(candidate,'candidate');
+    console.log(DebugCandidate);
     pc.addIceCandidate(candidate);
+   
     
     // titi: on copie le dernier candidat recut ds une variable de contrôle
     // lastCandidate = candidate;
@@ -623,6 +619,7 @@ function doCall() {
       }
      }
    }
+  
   constraints = mergeConstraints(constraints, sdpConstraints);
   console.log('>>>>>> Sending offer to peer, with constraints: \n' +
     '  \'' + JSON.stringify(constraints) + '\'.');
@@ -631,7 +628,6 @@ function doCall() {
   console.log(">>>>>> // Envoi de l'offre. Normalement en retour on doit recevoir une 'answer'");
   console.log(">>>>>> pc.createOffer(setLocalAndSendMessage, null, constraints)");
   pc.createOffer(setLocalAndSendMessage, null, constraints);
-  console.log(">>> / doCall()");
 }
 
 // Execute par l'appele uniquement...
@@ -641,6 +637,7 @@ function doAnswer() {
 }
 
 function mergeConstraints(cons1, cons2) {
+  
   console.log('>>> mergeConstraints(cons1, cons2) / > ???');
   var merged = cons1;
   for (var name in cons2.mandatory) {
@@ -661,6 +658,10 @@ function setLocalAndSendMessage(sessionDescription) {
   sessionDescription.sdp = preferOpus(sessionDescription.sdp);
 
   pc.setLocalDescription(sessionDescription);
+
+ // tool.AlertObjectDump(sessionDescription,"sessionDescription");
+
+
 
   // Envoi par WebSocket
   sendMessage(sessionDescription);
